@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  tests:
+    docker:
+      - image: circleci/golang:1.12.6
+    working_directory: /go/src/github.com/orbs-network/contract-external-libraries-go/
+    steps:
+      - checkout
+      - run: ./git-submodule-checkout.sh
+      - run: go test ./testing/... -v
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - tests
