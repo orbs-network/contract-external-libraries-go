@@ -30,13 +30,14 @@ type Event struct {
 }
 
 func recordEvent(eventType string, metadata string, addr string) {
-	event := &Event{
+	event := Event{
 		Type: eventType,
 		Metadata: metadata,
 		SignerAddress: toAddress(addr),
 		Contract: string(address.GetCallerAddress()),
 		Timestamp: env.GetBlockTimestamp(),
 	}
+	//state.WriteString([]byte("hello"), "world")
 
 	structs.WriteStruct("events_" + strconv.FormatUint(_value(), 10), event)
 	_inc()

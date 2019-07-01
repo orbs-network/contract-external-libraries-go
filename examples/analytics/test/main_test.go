@@ -43,10 +43,7 @@ func TestIncrementWithAnalytics(t *testing.T) {
 	h.deployIncrementContract(t, sender)
 	h.deployAnalyticsContract(t, sender)
 
-	require.True(t, test.Eventually(1*time.Second, func() bool {
-		value := h.value(t, sender)
-		return value == 0
-	}))
+	h.setAnalyticsContractAddress(t, sender, h.analyticsContractName)
 
 	result, err := h.inc(t, sender)
 	require.NoError(t, err)

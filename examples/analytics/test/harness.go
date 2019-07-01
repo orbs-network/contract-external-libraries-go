@@ -70,3 +70,17 @@ func (h *harness) inc(t *testing.T, sender *orbs.OrbsAccount) (*codec.SendTransa
 
 	return h.client.SendTransaction(tx)
 }
+
+func (h *harness) setAnalyticsContractAddress(t *testing.T, sender *orbs.OrbsAccount, addr string) (*codec.SendTransactionResponse, error) {
+	tx, _, err := h.client.CreateTransaction(sender.PublicKey, sender.PrivateKey, h.incrementContractName, "setAnalyticsContractAddress", addr)
+	require.NoError(t, err)
+
+	return h.client.SendTransaction(tx)
+}
+
+func (h *harness) recordEvent(t *testing.T, sender *orbs.OrbsAccount, eventType string, metadata string, addr string) (*codec.SendTransactionResponse, error) {
+	tx, _, err := h.client.CreateTransaction(sender.PublicKey, sender.PrivateKey, h.analyticsContractName, "recordEvent", eventType, metadata, addr)
+	require.NoError(t, err)
+
+	return h.client.SendTransaction(tx)
+}
