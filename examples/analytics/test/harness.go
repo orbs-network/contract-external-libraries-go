@@ -84,3 +84,13 @@ func (h *harness) recordEvent(t *testing.T, sender *orbs.OrbsAccount, eventType 
 
 	return h.client.SendTransaction(tx)
 }
+
+func (h *harness) getEvents(t *testing.T, sender *orbs.OrbsAccount) interface{} {
+	query, err := h.client.CreateQuery(sender.PublicKey, h.analyticsContractName, "getEvents")
+	require.NoError(t, err)
+
+	queryResponse, err := h.client.SendQuery(query)
+	require.NoError(t, err)
+
+	return queryResponse.OutputArguments[0]
+}

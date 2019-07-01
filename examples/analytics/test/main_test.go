@@ -7,6 +7,7 @@
 package test
 
 import (
+	"encoding/json"
 	"github.com/orbs-network/orbs-client-sdk-go/codec"
 	"github.com/orbs-network/orbs-client-sdk-go/orbs"
 	"github.com/orbs-network/orbs-contract-sdk/go/examples/test"
@@ -36,6 +37,15 @@ func TestIncrement(t *testing.T) {
 	}))
 }
 
+type Event struct {
+	Type string
+	Metadata string
+
+	Contract string
+	SignerAddress string
+	Timestamp uint64
+}
+
 func TestIncrementWithAnalytics(t *testing.T) {
 	sender, _ := orbs.CreateAccount()
 
@@ -52,5 +62,15 @@ func TestIncrementWithAnalytics(t *testing.T) {
 	require.True(t, test.Eventually(1*time.Second, func() bool {
 		value := h.value(t, sender)
 		return value == 1
+	}))
+
+	require.True(t, test.Eventually(1*time.Second, func() bool {
+		value := h.getEvents(t, sender)
+		var events []Event
+		if err = json.Unmarshal([]byte(value.(string)), &events); err == nil {
+			return len(events) > 0 && events[0].Type == "myEventType"
+		}
+
+		return false
 	}))
 }

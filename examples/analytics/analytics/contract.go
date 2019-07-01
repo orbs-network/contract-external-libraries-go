@@ -1,8 +1,9 @@
 package main
 
 import (
+	"encoding/hex"
 	"encoding/json"
-	"github.com/orbs-network/contract-external-libraries-go/v1/structs"
+	"github.com/orbs-network/contract-external-libraries-go/v1/keys"
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1"
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/address"
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/env"
@@ -31,16 +32,15 @@ type Event struct {
 
 func recordEvent(eventType string, metadata string, addr string) {
 	event := Event{
-		Type: eventType,
-		Metadata: metadata,
-		SignerAddress: toAddress(addr),
-		Contract: string(address.GetCallerAddress()),
-		Timestamp: env.GetBlockTimestamp(),
+		Type:          eventType,
+		Metadata:      metadata,
+		SignerAddress: _toAddress(addr),
+		Contract:      hex.EncodeToString(address.GetCallerAddress()),
+		Timestamp:     env.GetBlockTimestamp(),
 	}
 	//state.WriteString([]byte("hello"), "world")
 
-	structs.WriteStruct("events_" + strconv.FormatUint(_value(), 10), event)
-	_inc()
+	_saveEvent(event)
 }
 
 func getEvents() string {
@@ -48,15 +48,16 @@ func getEvents() string {
 
 	events_total := _value()
 	for i := uint64(0); i < events_total; i++ {
-		event := Event{}
-		structs.ReadStruct("events_" + strconv.FormatUint(_value(), 10), &event)
+		//event := Event{}
+		//structs.ReadStruct("events_" + strconv.FormatUint(_value(), 10), &event)
+		events = append(events, _getEvent(i))
 	}
 
 	rawJson, _ := json.Marshal(events)
 	return string(rawJson)
 }
 
-func toAddress(input string) string {
+func _toAddress(input string) string {
 	if len(input) > 40 {
 		input = input[2:42]
 	}
@@ -71,4 +72,28 @@ func _inc() uint64 {
 
 func _value() uint64 {
 	return state.ReadUint64(COUNTER_KEY)
+}
+
+func _saveEvent(event Event) {
+	id := strconv.FormatUint(_value(), 10)
+
+	state.WriteString(keys.Key("events_type", id), event.Type)
+	state.WriteString(keys.Key("events_metadata", id), event.Metadata)
+	state.WriteString(keys.Key("events_signer", id), event.SignerAddress)
+	state.WriteString(keys.Key("events_contract", id), event.Contract)
+	state.WriteUint64(keys.Key("events_timestamp", id), event.Timestamp)
+
+	_inc()
+}
+
+func _getEvent(i uint64) Event {
+	id := strconv.FormatUint(i, 10)
+
+	return Event{
+		Type: state.ReadString(keys.Key("events_type", id)),
+		Metadata: state.ReadString(keys.Key("events_metadata", id)),
+		SignerAddress: state.ReadString(keys.Key("events_signer", id)),
+		Contract: state.ReadString(keys.Key("events_contract", id)),
+		Timestamp: state.ReadUint64(keys.Key("events_timestamp", id)),
+	}
 }
