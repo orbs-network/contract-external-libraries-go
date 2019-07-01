@@ -35,3 +35,25 @@ func TestIncrement(t *testing.T) {
 		return value == 1
 	}))
 }
+
+func TestIncrementWithAnalytics(t *testing.T) {
+	sender, _ := orbs.CreateAccount()
+
+	h := newHarness()
+	h.deployIncrementContract(t, sender)
+	h.deployAnalyticsContract(t, sender)
+
+	require.True(t, test.Eventually(1*time.Second, func() bool {
+		value := h.value(t, sender)
+		return value == 0
+	}))
+
+	result, err := h.inc(t, sender)
+	require.NoError(t, err)
+	require.EqualValues(t, codec.EXECUTION_RESULT_SUCCESS, result.ExecutionResult)
+
+	require.True(t, test.Eventually(1*time.Second, func() bool {
+		value := h.value(t, sender)
+		return value == 1
+	}))
+}

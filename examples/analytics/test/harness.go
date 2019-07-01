@@ -14,6 +14,7 @@ import (
 type harness struct {
 	client                *orbs.OrbsClient
 	incrementContractName string
+	analyticsContractName string
 }
 
 
@@ -21,15 +22,30 @@ func newHarness() *harness {
 	return &harness{
 		client:                orbs.NewClient(test.GetGammaEndpoint(), 42, codec.NETWORK_TYPE_TEST_NET),
 		incrementContractName: fmt.Sprintf("Inc%d", time.Now().UnixNano()),
+		analyticsContractName: fmt.Sprintf("Analytics%d", time.Now().UnixNano()),
 	}
 }
 
 func (h *harness) deployIncrementContract(t *testing.T, sender *orbs.OrbsAccount) {
-	contractSource, err := ioutil.ReadFile("../increment.go")
+	contractSource, err := ioutil.ReadFile("../increment/contract.go")
 	require.NoError(t, err)
 
 	deployTx, _, err := h.client.CreateTransaction(sender.PublicKey, sender.PrivateKey,
 		"_Deployments", "deployService", h.incrementContractName, uint32(1), contractSource)
+	require.NoError(t, err)
+
+	deployResponse, err := h.client.SendTransaction(deployTx)
+	require.NoError(t, err)
+
+	require.EqualValues(t, codec.EXECUTION_RESULT_SUCCESS, deployResponse.ExecutionResult)
+}
+
+func (h *harness) deployAnalyticsContract(t *testing.T, sender *orbs.OrbsAccount) {
+	contractSource, err := ioutil.ReadFile("../analytics/contract.go")
+	require.NoError(t, err)
+
+	deployTx, _, err := h.client.CreateTransaction(sender.PublicKey, sender.PrivateKey,
+		"_Deployments", "deployService", h.analyticsContractName, uint32(1), contractSource)
 	require.NoError(t, err)
 
 	deployResponse, err := h.client.SendTransaction(deployTx)

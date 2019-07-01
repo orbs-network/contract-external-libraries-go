@@ -14,13 +14,6 @@ func _init() {
 
 }
 
-//func toAddress(input string) string {
-//	if len(input) > 40 {
-//		input = input[2:42]
-//	}
-//	return strings.ToLower(input)
-//}
-
 func inc() uint64 {
 	v := value() + 1
 	state.WriteUint64(COUNTER_KEY, v)
