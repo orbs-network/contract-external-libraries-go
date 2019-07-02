@@ -78,15 +78,18 @@ func (h *harness) setAnalyticsContractAddress(t *testing.T, sender *orbs.OrbsAcc
 	return h.client.SendTransaction(tx)
 }
 
-func (h *harness) recordEvent(t *testing.T, sender *orbs.OrbsAccount, eventType string, metadata string, addr string) (*codec.SendTransactionResponse, error) {
-	tx, _, err := h.client.CreateTransaction(sender.PublicKey, sender.PrivateKey, h.analyticsContractName, "recordEvent", eventType, metadata, addr)
-	require.NoError(t, err)
-
-	return h.client.SendTransaction(tx)
-}
-
 func (h *harness) getEvents(t *testing.T, sender *orbs.OrbsAccount) interface{} {
 	query, err := h.client.CreateQuery(sender.PublicKey, h.analyticsContractName, "getEvents")
+	require.NoError(t, err)
+
+	queryResponse, err := h.client.SendQuery(query)
+	require.NoError(t, err)
+
+	return queryResponse.OutputArguments[0]
+}
+
+func (h *harness) getAggregationByActionOverPeriodOfTime(t *testing.T, sender *orbs.OrbsAccount, eventCategory string, aggregationType string, startTime uint64, endTime uint64) interface{} {
+	query, err := h.client.CreateQuery(sender.PublicKey, h.analyticsContractName, "getAggregationByActionOverPeriodOfTime", eventCategory, aggregationType, startTime, endTime)
 	require.NoError(t, err)
 
 	queryResponse, err := h.client.SendQuery(query)

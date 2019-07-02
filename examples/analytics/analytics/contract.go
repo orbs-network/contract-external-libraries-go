@@ -11,7 +11,7 @@ import (
 	"strconv"
 )
 
-var PUBLIC = sdk.Export(recordEvent, getEvents)
+var PUBLIC = sdk.Export(recordEvent, getEvents, getAggregationByActionOverPeriodOfTime)
 var SYSTEM = sdk.Export(_init)
 
 var COUNTER_KEY = []byte("counter")
@@ -63,6 +63,48 @@ func getEvents() string {
 	return string(rawJson)
 }
 
+// aggType - count, sum, min, max
+func getAggregationByActionOverPeriodOfTime(eventCategory string, aggregationType string, startTime uint64, endTime uint64) string {
+	aggregation := make(map[string]uint64)
+
+	events_total := _value()
+	for i := uint64(0); i < events_total; i++ {
+		event := Event{}
+		structs.ReadStruct("events_" + strconv.FormatUint(i, 10), &event)
+
+		if startTime != 0 && event.Timestamp < startTime {
+			continue
+		}
+		if endTime != 0 && event.Timestamp > endTime {
+			continue
+		}
+		if eventCategory != "" && event.Category != eventCategory {
+			continue
+		}
+
+		v := aggregation[event.Action]
+		switch aggregationType {
+		case "count":
+			v += 1
+		case "sum":
+			v += event.Value
+		case "max":
+			v = _max(v, event.Value)
+		case "min":
+			if i == 0 {
+				v = event.Value
+			} else {
+				v = _min(v, event.Value)
+			}
+		}
+
+		aggregation[event.Action] = v
+	}
+
+	rawJson, _ := json.Marshal(aggregation)
+	return string(rawJson)
+}
+
 func _inc() uint64 {
 	v := _value() + 1
 	state.WriteUint64(COUNTER_KEY, v)
@@ -71,4 +113,18 @@ func _inc() uint64 {
 
 func _value() uint64 {
 	return state.ReadUint64(COUNTER_KEY)
+}
+
+func _max(x, y uint64) uint64 {
+	if x < y {
+		return y
+	}
+	return x
+}
+
+func _min(x, y uint64) uint64 {
+	if x > y {
+		return y
+	}
+	return x
 }
