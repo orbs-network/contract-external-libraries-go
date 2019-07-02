@@ -68,7 +68,8 @@ func TestIncrementWithAnalytics(t *testing.T) {
 		value := h.getEvents(t, sender)
 		var events []Event
 		if err = json.Unmarshal([]byte(value.(string)), &events); err == nil {
-			return len(events) > 0 && events[0].Type == "myEventType"
+			return len(events) > 0 &&
+				events[0].Type == "myEventType"
 		}
 
 		return false
