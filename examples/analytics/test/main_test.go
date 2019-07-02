@@ -84,11 +84,15 @@ func TestIncrementWithAnalytics(t *testing.T) {
 	require.NoError(t, err)
 	require.EqualValues(t, codec.EXECUTION_RESULT_SUCCESS, result.ExecutionResult)
 
+	result, err = h.dec(t, sender)
+	require.NoError(t, err)
+	require.EqualValues(t, codec.EXECUTION_RESULT_SUCCESS, result.ExecutionResult)
+
 	require.True(t, test.Eventually(1*time.Second, func() bool {
-		value := h.getAggregationByActionOverPeriodOfTime(t, sender, "action", "min", uint64(0), uint64(0))
+		value := h.getAggregationByActionOverPeriodOfTime(t, sender, "action", "count", uint64(0), uint64(0))
 		aggregation := make(map[string]uint64)
 		if err = json.Unmarshal([]byte(value.(string)), &aggregation); err == nil {
-			return aggregation["increment"] == 1
+			return aggregation["increment"] == 2 && aggregation["decrement"] == 1
 		}
 
 		return false
