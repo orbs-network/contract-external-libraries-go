@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/hex"
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1"
-	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/address"
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/service"
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/state"
 )
@@ -25,9 +23,11 @@ func inc() uint64 {
 	if analyticsContractAddress := getAnalyticsContractAddress(); analyticsContractAddress != "" {
 		service.CallMethod(analyticsContractAddress,
 			"recordEvent",
-			"myEventType",
-			"someMetadata",
-			hex.EncodeToString(address.GetCallerAddress()))
+			"action", // category
+			"increment", // action
+			"no label", // label
+			uint64(1), // value
+		)
 	}
 
 	return v

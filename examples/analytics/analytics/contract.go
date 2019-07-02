@@ -9,7 +9,6 @@ import (
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/env"
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/state"
 	"strconv"
-	"strings"
 )
 
 var PUBLIC = sdk.Export(recordEvent, getEvents)
@@ -22,18 +21,25 @@ func _init() {
 }
 
 type Event struct {
-	Type string
-	Metadata string
+	Category string
+	Action string
+	Label string
+	Value uint64
 
 	Contract string
 	SignerAddress string
 	Timestamp uint64
 }
 
-func recordEvent(eventType string, metadata string, addr string) {
+// Required: category, action
+// Optional: label, value, metadata
+// Metadata should be in JSON format
+func recordEvent(eventCategory string, eventAction string, eventLabel string, eventValue uint64) {
 	event := Event{
-		Type:          eventType,
-		Metadata:      metadata,
+		Category:      eventCategory,
+		Action: eventAction,
+		Label: eventLabel,
+		Value: eventValue,
 		SignerAddress: hex.EncodeToString(address.GetSignerAddress()),
 		Contract:      hex.EncodeToString(address.GetCallerAddress()),
 		Timestamp:     env.GetBlockTimestamp(),
@@ -55,13 +61,6 @@ func getEvents() string {
 
 	rawJson, _ := json.Marshal(events)
 	return string(rawJson)
-}
-
-func _toAddress(input string) string {
-	if len(input) > 40 {
-		input = input[2:42]
-	}
-	return strings.ToLower(input)
 }
 
 func _inc() uint64 {

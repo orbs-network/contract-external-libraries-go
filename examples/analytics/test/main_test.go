@@ -38,8 +38,10 @@ func TestIncrement(t *testing.T) {
 }
 
 type Event struct {
-	Type string
-	Metadata string
+	Category string
+	Action string
+	Label string
+	Value uint64
 
 	Contract string
 	SignerAddress string
@@ -69,7 +71,10 @@ func TestIncrementWithAnalytics(t *testing.T) {
 		var events []Event
 		if err = json.Unmarshal([]byte(value.(string)), &events); err == nil {
 			return len(events) > 0 &&
-				events[0].Type == "myEventType"
+				events[0].Category == "action" &&
+				events[0].Action == "increment" &&
+				events[0].Label == "no label" &&
+				events[0].Value == 1
 		}
 
 		return false
