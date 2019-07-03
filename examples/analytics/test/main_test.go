@@ -20,19 +20,19 @@ func TestIncrement(t *testing.T) {
 	sender, _ := orbs.CreateAccount()
 
 	h := newHarness()
-	h.deployIncrementContract(t, sender)
+	h.incrementContract.deployContract(t, sender)
 
 	require.True(t, test.Eventually(1*time.Second, func() bool {
-		value := h.value(t, sender)
+		value := h.incrementContract.value(t, sender)
 		return value == 0
 	}))
 
-	result, err := h.inc(t, sender)
+	result, err := h.incrementContract.inc(t, sender)
 	require.NoError(t, err)
 	require.EqualValues(t, codec.EXECUTION_RESULT_SUCCESS, result.ExecutionResult)
 
 	require.True(t, test.Eventually(1*time.Second, func() bool {
-		value := h.value(t, sender)
+		value := h.incrementContract.value(t, sender)
 		return value == 1
 	}))
 }
@@ -52,22 +52,25 @@ func TestIncrementWithAnalytics(t *testing.T) {
 	sender, _ := orbs.CreateAccount()
 
 	h := newHarness()
-	h.deployIncrementContract(t, sender)
-	h.deployAnalyticsContract(t, sender)
+	incrementContract := h.incrementContract
+	incrementContract.deployContract(t, sender)
 
-	h.setAnalyticsContractAddress(t, sender, h.analyticsContractName)
+	analyticsContract := h.analyticsContract
+	analyticsContract.deployContract(t, sender)
 
-	result, err := h.inc(t, sender)
+	incrementContract.setAnalyticsContractAddress(t, sender, analyticsContract.name)
+
+	result, err := incrementContract.inc(t, sender)
 	require.NoError(t, err)
 	require.EqualValues(t, codec.EXECUTION_RESULT_SUCCESS, result.ExecutionResult)
 
 	require.True(t, test.Eventually(1*time.Second, func() bool {
-		value := h.value(t, sender)
+		value := incrementContract.value(t, sender)
 		return value == 1
 	}))
 
 	require.True(t, test.Eventually(1*time.Second, func() bool {
-		value := h.getEvents(t, sender)
+		value := analyticsContract.getEvents(t, sender)
 		var events []Event
 		if err = json.Unmarshal([]byte(value.(string)), &events); err == nil {
 			return len(events) > 0 &&
@@ -80,16 +83,16 @@ func TestIncrementWithAnalytics(t *testing.T) {
 		return false
 	}))
 
-	result, err = h.inc(t, sender)
+	result, err = incrementContract.inc(t, sender)
 	require.NoError(t, err)
 	require.EqualValues(t, codec.EXECUTION_RESULT_SUCCESS, result.ExecutionResult)
 
-	result, err = h.dec(t, sender)
+	result, err = incrementContract.dec(t, sender)
 	require.NoError(t, err)
 	require.EqualValues(t, codec.EXECUTION_RESULT_SUCCESS, result.ExecutionResult)
 
 	require.True(t, test.Eventually(1*time.Second, func() bool {
-		value := h.getAggregationByActionOverPeriodOfTime(t, sender, "actions", "count", uint64(0), uint64(0))
+		value := analyticsContract.getAggregationByActionOverPeriodOfTime(t, sender, "actions", "count", uint64(0), uint64(0))
 		aggregation := make(map[string]uint64)
 		if err = json.Unmarshal([]byte(value.(string)), &aggregation); err == nil {
 			return aggregation["increment"] == 2 && aggregation["decrement"] == 1
