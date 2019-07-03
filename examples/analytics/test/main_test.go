@@ -39,13 +39,13 @@ func TestIncrement(t *testing.T) {
 
 type Event struct {
 	Category string
-	Action string
-	Label string
-	Value uint64
+	Action   string
+	Label    string
+	Value    uint64
 
-	Contract string
+	Contract      string
 	SignerAddress string
-	Timestamp uint64
+	Timestamp     uint64
 }
 
 func TestIncrementWithAnalytics(t *testing.T) {

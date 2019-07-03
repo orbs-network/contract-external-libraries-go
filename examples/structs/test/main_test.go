@@ -8,9 +8,9 @@ package test
 
 import (
 	"encoding/json"
-	"github.com/orbs-network/orbs-contract-sdk/go/examples/test"
 	"github.com/orbs-network/orbs-client-sdk-go/codec"
 	"github.com/orbs-network/orbs-client-sdk-go/orbs"
+	"github.com/orbs-network/orbs-contract-sdk/go/examples/test"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -24,8 +24,8 @@ func TestPhoneBook(t *testing.T) {
 
 	payload := map[string]interface{}{
 		"FirstName": "Huckleberry",
-		"LastName": "Finn",
-		"Phone": 1234567,
+		"LastName":  "Finn",
+		"Phone":     1234567,
 	}
 	rawJson, _ := json.Marshal(payload)
 

@@ -15,19 +15,18 @@ type harness struct {
 
 type contract struct {
 	client *orbs.OrbsClient
-	name string
+	name   string
 }
 
 type incrementContract contract
 type analyticsContract contract
-
 
 func newHarness() *harness {
 	client := orbs.NewClient(test.GetGammaEndpoint(), 42, codec.NETWORK_TYPE_TEST_NET)
 
 	return &harness{
 		incrementContract: incrementContract{
-			name: fmt.Sprintf("Inc%d", time.Now().UnixNano()),
+			name:   fmt.Sprintf("Inc%d", time.Now().UnixNano()),
 			client: client,
 		},
 		analyticsContract: analyticsContract{

@@ -22,13 +22,13 @@ func _init() {
 
 type Event struct {
 	Category string
-	Action string
-	Label string
-	Value uint64
+	Action   string
+	Label    string
+	Value    uint64
 
-	Contract string
+	Contract      string
 	SignerAddress string
-	Timestamp uint64
+	Timestamp     uint64
 }
 
 // Required: category, action
@@ -37,15 +37,15 @@ type Event struct {
 func recordEvent(eventCategory string, eventAction string, eventLabel string, eventValue uint64) {
 	event := Event{
 		Category:      eventCategory,
-		Action: eventAction,
-		Label: eventLabel,
-		Value: eventValue,
+		Action:        eventAction,
+		Label:         eventLabel,
+		Value:         eventValue,
 		SignerAddress: hex.EncodeToString(address.GetSignerAddress()),
 		Contract:      hex.EncodeToString(address.GetCallerAddress()),
 		Timestamp:     env.GetBlockTimestamp(),
 	}
 
-	structs.WriteStruct("events_" + strconv.FormatUint(_value(), 10), event)
+	structs.WriteStruct("events_"+strconv.FormatUint(_value(), 10), event)
 	_inc()
 }
 
@@ -55,7 +55,7 @@ func getEvents() string {
 	events_total := _value()
 	for i := uint64(0); i < events_total; i++ {
 		event := Event{}
-		structs.ReadStruct("events_" + strconv.FormatUint(i, 10), &event)
+		structs.ReadStruct("events_"+strconv.FormatUint(i, 10), &event)
 		events = append(events, event)
 	}
 
@@ -70,7 +70,7 @@ func getAggregationByActionOverPeriodOfTime(eventCategory string, aggregationTyp
 	events_total := _value()
 	for i := uint64(0); i < events_total; i++ {
 		event := Event{}
-		structs.ReadStruct("events_" + strconv.FormatUint(i, 10), &event)
+		structs.ReadStruct("events_"+strconv.FormatUint(i, 10), &event)
 
 		if startTime != 0 && event.Timestamp < startTime {
 			continue

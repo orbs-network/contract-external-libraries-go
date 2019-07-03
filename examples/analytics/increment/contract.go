@@ -52,10 +52,10 @@ func _recordAction(action string) {
 	if analyticsContractAddress := getAnalyticsContractAddress(); analyticsContractAddress != "" {
 		service.CallMethod(analyticsContractAddress,
 			"recordEvent",
-			"actions", // category
-			action, // action
+			"actions",  // category
+			action,     // action
 			"no label", // label
-			uint64(1), // value
+			uint64(1),  // value
 		)
 	}
 }

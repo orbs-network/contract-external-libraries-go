@@ -66,4 +66,3 @@ func (h *incrementContract) setAnalyticsContractAddress(t *testing.T, sender *or
 
 	return h.client.SendTransaction(tx)
 }
-
