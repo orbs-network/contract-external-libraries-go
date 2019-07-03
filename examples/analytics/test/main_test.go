@@ -71,7 +71,7 @@ func TestIncrementWithAnalytics(t *testing.T) {
 		var events []Event
 		if err = json.Unmarshal([]byte(value.(string)), &events); err == nil {
 			return len(events) > 0 &&
-				events[0].Category == "action" &&
+				events[0].Category == "actions" &&
 				events[0].Action == "increment" &&
 				events[0].Label == "no label" &&
 				events[0].Value == 1
@@ -89,7 +89,7 @@ func TestIncrementWithAnalytics(t *testing.T) {
 	require.EqualValues(t, codec.EXECUTION_RESULT_SUCCESS, result.ExecutionResult)
 
 	require.True(t, test.Eventually(1*time.Second, func() bool {
-		value := h.getAggregationByActionOverPeriodOfTime(t, sender, "action", "count", uint64(0), uint64(0))
+		value := h.getAggregationByActionOverPeriodOfTime(t, sender, "actions", "count", uint64(0), uint64(0))
 		aggregation := make(map[string]uint64)
 		if err = json.Unmarshal([]byte(value.(string)), &aggregation); err == nil {
 			return aggregation["increment"] == 2 && aggregation["decrement"] == 1
