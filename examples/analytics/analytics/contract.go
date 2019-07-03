@@ -49,6 +49,7 @@ func recordEvent(eventCategory string, eventAction string, eventLabel string, ev
 	_inc()
 }
 
+// This is just an example, we should be able to retrieve raw data with scrolling interface
 func getEvents() string {
 	var events []Event
 
@@ -64,6 +65,7 @@ func getEvents() string {
 }
 
 // aggType - count, sum, min, max
+// This is just an example, real aggregation should NOT be done in a smart contract
 func getAggregationByActionOverPeriodOfTime(eventCategory string, aggregationType string, startTime uint64, endTime uint64) string {
 	aggregation := make(map[string]uint64)
 

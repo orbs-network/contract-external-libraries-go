@@ -22,20 +22,6 @@ func (h *incrementContract) deployContract(t *testing.T, sender *orbs.OrbsAccoun
 	require.EqualValues(t, codec.EXECUTION_RESULT_SUCCESS, deployResponse.ExecutionResult)
 }
 
-func (h *analyticsContract) deployContract(t *testing.T, sender *orbs.OrbsAccount) {
-	contractSource, err := ioutil.ReadFile("../analytics/contract.go")
-	require.NoError(t, err)
-
-	deployTx, _, err := h.client.CreateTransaction(sender.PublicKey, sender.PrivateKey,
-		"_Deployments", "deployService", h.name, uint32(1), contractSource)
-	require.NoError(t, err)
-
-	deployResponse, err := h.client.SendTransaction(deployTx)
-	require.NoError(t, err)
-
-	require.EqualValues(t, codec.EXECUTION_RESULT_SUCCESS, deployResponse.ExecutionResult)
-}
-
 func (h *incrementContract) value(t *testing.T, sender *orbs.OrbsAccount) uint64 {
 	query, err := h.client.CreateQuery(sender.PublicKey, h.name, "value")
 	require.NoError(t, err)

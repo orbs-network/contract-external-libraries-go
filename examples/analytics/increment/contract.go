@@ -10,7 +10,6 @@ var PUBLIC = sdk.Export(inc, dec, value, getAnalyticsContractAddress, setAnalyti
 var SYSTEM = sdk.Export(_init)
 
 var COUNTER_KEY = []byte("counter")
-var ANALYTICS_CONTRACT_ADDRESS = []byte("analytics_contract_address")
 
 func _init() {
 
@@ -39,6 +38,10 @@ func dec() uint64 {
 func value() uint64 {
 	return state.ReadUint64(COUNTER_KEY)
 }
+
+// Analytics setup
+
+var ANALYTICS_CONTRACT_ADDRESS = []byte("analytics_contract_address")
 
 func setAnalyticsContractAddress(addr string) {
 	state.WriteString(ANALYTICS_CONTRACT_ADDRESS, addr)

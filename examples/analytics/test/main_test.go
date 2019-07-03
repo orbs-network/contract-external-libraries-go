@@ -7,7 +7,9 @@
 package test
 
 import (
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"github.com/orbs-network/orbs-client-sdk-go/codec"
 	"github.com/orbs-network/orbs-client-sdk-go/orbs"
 	"github.com/orbs-network/orbs-contract-sdk/go/examples/test"
@@ -96,6 +98,72 @@ func TestIncrementWithAnalytics(t *testing.T) {
 		aggregation := make(map[string]uint64)
 		if err = json.Unmarshal([]byte(value.(string)), &aggregation); err == nil {
 			return aggregation["increment"] == 2 && aggregation["decrement"] == 1
+		}
+
+		return false
+	}))
+}
+
+type ERC20Event struct {
+	Action string `json:"category"`
+	From   string `json:"action"`
+	To     string `json:"label"`
+	Value  uint64 `json:"value"`
+
+	Contract      string
+	SignerAddress string
+	Timestamp     uint64
+}
+
+func TestERC20WithAnalytics(t *testing.T) {
+	owner, _ := orbs.CreateAccount()
+
+	h := newHarness()
+	erc20 := h.erc20Contract
+	erc20.deployContract(t, owner)
+
+	analyticsContract := h.analyticsContract
+	analyticsContract.deployContract(t, owner)
+
+	erc20.setAnalyticsContractAddress(t, owner, analyticsContract.name)
+
+	require.True(t, test.Eventually(1*time.Second, func() bool {
+		value := erc20.totalSupply(t, owner)
+		return value == 1000000000000000000
+	}))
+
+	firstInvestor, _ := orbs.CreateAccount()
+	_, err := erc20.transfer(t, owner, firstInvestor, 1000)
+	require.NoError(t, err)
+
+	require.True(t, test.Eventually(1*time.Second, func() bool {
+		value := analyticsContract.getEvents(t, owner)
+		var events []ERC20Event
+		if err = json.Unmarshal([]byte(value.(string)), &events); err == nil {
+			fmt.Println(events)
+			return len(events) > 0 &&
+				events[0].Action == "transfer" &&
+				events[0].From == hex.EncodeToString(owner.AddressAsBytes()) &&
+				events[0].To == hex.EncodeToString(firstInvestor.AddressAsBytes()) &&
+				events[0].Value == 1000
+		}
+
+		return false
+	}))
+
+	for i := 0; i < 10; i++ {
+		secondaryMarketParticipant, _ := orbs.CreateAccount()
+		_, err := erc20.transfer(t, firstInvestor, secondaryMarketParticipant, 10+uint64(i))
+		require.NoError(t, err)
+	}
+
+	require.True(t, test.Eventually(1*time.Second, func() bool {
+		value := analyticsContract.getAggregationByActionOverPeriodOfTime(t, owner, "transfer", "count", uint64(0), uint64(0))
+		aggregation := make(map[string]uint64)
+		if err = json.Unmarshal([]byte(value.(string)), &aggregation); err == nil {
+			fmt.Println(aggregation)
+			return aggregation[hex.EncodeToString(owner.AddressAsBytes())] == 1 &&
+				aggregation[hex.EncodeToString(firstInvestor.AddressAsBytes())] == 10
 		}
 
 		return false

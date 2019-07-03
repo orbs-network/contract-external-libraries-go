@@ -1,14 +1,17 @@
 package main
 
 import (
+	"encoding/hex"
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1"
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/address"
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/events"
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/safemath/safeuint64"
+	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/service"
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/state"
 )
 
-var PUBLIC = sdk.Export(totalSupply, balanceOf, allowance, increaseAllowance, decreaseAllowance, transfer, approve, transferFrom, symbol, name, decimals)
+var PUBLIC = sdk.Export(totalSupply, balanceOf, allowance, increaseAllowance, decreaseAllowance, transfer, approve, transferFrom, symbol, name, decimals,
+	setAnalyticsContractAddress, getAnalyticsContractAddress)
 var SYSTEM = sdk.Export(_init)
 var EVENTS = sdk.Export(Approval, Transfer)
 
@@ -69,6 +72,7 @@ func _transfer(from, to []byte, value uint64) {
 	newToBalance := safeuint64.Add(toInitialBalance, value)
 	writeAccountBalance(to, newToBalance)
 	events.EmitEvent(Transfer, from, to, value)
+	_recordAction("transfer", hex.EncodeToString(from), hex.EncodeToString(to), value)
 }
 
 func Approval(owner, spender []byte, value uint64) {} // triggered when allowances change is called
@@ -76,6 +80,7 @@ func approve(spender []byte, value uint64) {
 	address.ValidateAddress(spender)
 	writeAccountAllowance(address.GetCallerAddress(), spender, value)
 	events.EmitEvent(Approval, address.GetCallerAddress(), spender, value)
+	_recordAction("approval", hex.EncodeToString(address.GetCallerAddress()), hex.EncodeToString(spender), value)
 }
 
 // will emit an approval event
@@ -92,6 +97,7 @@ func increaseAllowance(spender []byte, value uint64) uint32 {
 	writeAccountAllowance(owner, spender, newAllowance)
 
 	events.EmitEvent(Approval, owner, spender, newAllowance)
+	_recordAction("approval", hex.EncodeToString(owner), hex.EncodeToString(spender), newAllowance)
 	return 1
 }
 
@@ -106,6 +112,7 @@ func _decreaseAllowance(owner, spender []byte, value uint64) {
 	writeAccountAllowance(owner, spender, newAllowance)
 
 	events.EmitEvent(Approval, owner, spender, newAllowance)
+	_recordAction("approval", hex.EncodeToString(owner), hex.EncodeToString(spender), newAllowance)
 }
 
 func _mint(to []byte, value uint64) {
@@ -149,4 +156,29 @@ func readAccountAllowance(owner, spender []byte) uint64 {
 
 	prefix := append(allowanceStoragePrefix, owner...)
 	return state.ReadUint64(append(prefix, spender...))
+}
+
+// Analytics setup
+
+var ANALYTICS_CONTRACT_ADDRESS = []byte("analytics_contract_address")
+
+func setAnalyticsContractAddress(addr string) {
+	state.WriteString(ANALYTICS_CONTRACT_ADDRESS, addr)
+}
+
+func getAnalyticsContractAddress() string {
+	return state.ReadString(ANALYTICS_CONTRACT_ADDRESS)
+}
+
+// We re-purpose event arguments to suit our needs
+func _recordAction(action string, from string, to string, value uint64) {
+	if analyticsContractAddress := getAnalyticsContractAddress(); analyticsContractAddress != "" {
+		service.CallMethod(analyticsContractAddress,
+			"recordEvent",
+			action,
+			from,
+			to,
+			value,
+		)
+	}
 }

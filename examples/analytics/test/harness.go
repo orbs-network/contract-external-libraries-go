@@ -11,6 +11,7 @@ import (
 type harness struct {
 	incrementContract incrementContract
 	analyticsContract analyticsContract
+	erc20Contract     erc20Contract
 }
 
 type contract struct {
@@ -20,6 +21,7 @@ type contract struct {
 
 type incrementContract contract
 type analyticsContract contract
+type erc20Contract contract
 
 func newHarness() *harness {
 	client := orbs.NewClient(test.GetGammaEndpoint(), 42, codec.NETWORK_TYPE_TEST_NET)
@@ -31,6 +33,10 @@ func newHarness() *harness {
 		},
 		analyticsContract: analyticsContract{
 			name:   fmt.Sprintf("Analytics%d", time.Now().UnixNano()),
+			client: client,
+		},
+		erc20Contract: erc20Contract{
+			name:   fmt.Sprintf("ERC20%d", time.Now().UnixNano()),
 			client: client,
 		},
 	}
