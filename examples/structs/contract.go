@@ -14,9 +14,9 @@ var SYSTEM = sdk.Export(_init)
 
 type PhonebookEntry struct {
 	FirstName string
-	LastName string
+	LastName  string
 
-	Phone uint64
+	Phone       uint64
 	OrbsAddress string
 }
 
