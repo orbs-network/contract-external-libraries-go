@@ -47,6 +47,7 @@ func TestIncrementWithACLs(t *testing.T) {
 	aclContract.deployContract(t, sender)
 
 	incrementContract.setACLContractAddress(t, sender, aclContract.name)
+	aclContract.setGuardedContractAddress(t, sender, incrementContract.name)
 
 	result, err := incrementContract.inc(t, sender)
 	require.NoError(t, err)
