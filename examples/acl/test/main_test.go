@@ -37,29 +37,48 @@ func TestIncrement(t *testing.T) {
 }
 
 func TestIncrementWithACLs(t *testing.T) {
-	sender, _ := orbs.CreateAccount()
+	incOwner, _ := orbs.CreateAccount()
+	aclOwner, _ := orbs.CreateAccount()
 
 	h := newHarness()
 	incrementContract := h.incrementContract
-	incrementContract.deployContract(t, sender)
+	incrementContract.deployContract(t, incOwner)
 
 	aclContract := h.aclContract
-	aclContract.deployContract(t, sender)
+	aclContract.deployContract(t, aclOwner)
 
-	incrementContract.setACLContractAddress(t, sender, aclContract.name)
-	aclContract.setGuardedContractAddress(t, sender, incrementContract.name)
+	incrementContract.setACLContractAddress(t, incOwner, aclContract.name)
+	aclContract.setGuardedContractAddress(t, aclOwner, incrementContract.name)
 
-	result, err := incrementContract.inc(t, sender)
+	incCaller, _ := orbs.CreateAccount()
+
+	result, err := incrementContract.inc(t, incCaller)
 	require.NoError(t, err)
 	require.EqualValues(t, codec.EXECUTION_RESULT_SUCCESS, result.ExecutionResult)
 
 	require.True(t, test.Eventually(1*time.Second, func() bool {
-		value := incrementContract.value(t, sender)
+		value := incrementContract.value(t, incCaller)
 		return value == 1
 	}))
 
-	result, err = incrementContract.dec(t, sender)
+	_checkFailedDecrement(t, incrementContract, incCaller)
+
+	result, err = aclContract.allowAction(t, aclOwner, "decrement", incCaller.AddressAsBytes())
+	_checkSuccessfulDecrement(t, incrementContract, incCaller)
+
+	result, err = aclContract.disallowAction(t, aclOwner, "decrement", incCaller.AddressAsBytes())
+	_checkFailedDecrement(t, incrementContract, incCaller)
+}
+
+func _checkFailedDecrement(t *testing.T, incContract incrementContract, incCaller *orbs.OrbsAccount)  {
+	result, err := incContract.dec(t, incCaller)
 	require.NoError(t, err)
 	require.EqualValues(t, codec.EXECUTION_RESULT_ERROR_SMART_CONTRACT, result.ExecutionResult)
 	require.EqualValues(t, "insufficient permissions for action 'decrement'", result.OutputArguments[0])
+}
+
+func _checkSuccessfulDecrement(t *testing.T, incContract incrementContract, incCaller *orbs.OrbsAccount) {
+	result, err := incContract.dec(t, incCaller)
+	require.NoError(t, err)
+	require.EqualValues(t, codec.EXECUTION_RESULT_SUCCESS, result.ExecutionResult)
 }

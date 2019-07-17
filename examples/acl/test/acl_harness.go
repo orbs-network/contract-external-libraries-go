@@ -28,3 +28,17 @@ func (h *aclContract) setGuardedContractAddress(t *testing.T, sender *orbs.OrbsA
 
 	return h.client.SendTransaction(tx)
 }
+
+func (h *aclContract) allowAction(t *testing.T, sender *orbs.OrbsAccount, action string, address []byte) (*codec.SendTransactionResponse, error) {
+	tx, _, err := h.client.CreateTransaction(sender.PublicKey, sender.PrivateKey, h.name, "setPermissions", address, action, uint32(1))
+	require.NoError(t, err)
+
+	return h.client.SendTransaction(tx)
+}
+
+func (h *aclContract) disallowAction(t *testing.T, sender *orbs.OrbsAccount, action string, address []byte) (*codec.SendTransactionResponse, error) {
+	tx, _, err := h.client.CreateTransaction(sender.PublicKey, sender.PrivateKey, h.name, "setPermissions", address, action, uint32(0))
+	require.NoError(t, err)
+
+	return h.client.SendTransaction(tx)
+}
