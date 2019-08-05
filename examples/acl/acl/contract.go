@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/hex"
-	"github.com/orbs-network/contract-external-libraries-go/v1/keys"
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1"
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/address"
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/state"
@@ -63,5 +62,5 @@ func _getPermissions(address []byte, action string) uint32 {
 }
 
 func _permissionKey(address []byte, action string) []byte {
-	return []byte(keys.Key(action, ".", hex.EncodeToString(address)))
+	return []byte(action + "." + hex.EncodeToString(address))
 }
