@@ -1,0 +1,14 @@
+syntax = "proto3";
+package main;
+
+message PhonebookEntryList {
+    repeated PhonebookEntry list = 1;
+}
+
+message PhonebookEntry {
+   string first_name = 1;
+   string last_name = 2;
+
+   uint64 phone = 3;
+   bytes orbs_address = 4;
+}
