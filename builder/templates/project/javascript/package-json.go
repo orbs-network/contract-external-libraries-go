@@ -5,7 +5,7 @@ const PACKAGE_JSON_SOURCE = `{
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "gamma:start": "gamma-cli start-local",
+    "gamma:start": "gamma-cli start-local -wait",
     "gamma:stop": "gamma-cli stop-local",
     "{{.AppNameLowercase}}:local": "node ./src/deploy.js",
     "test": "mocha test --timeout 20000 --exit"
