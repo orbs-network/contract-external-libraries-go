@@ -4,7 +4,6 @@ const JAVASCRIPT_DEPLOYMENT_SOURCE = `
 const { readFileSync } = require("fs");
 const {
 	Client, createAccount,
-	argString, argUint32, argBytes,
 	PROCESSOR_TYPE_NATIVE, NetworkType
 } = require("orbs-client-sdk");
 

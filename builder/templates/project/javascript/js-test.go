@@ -2,7 +2,7 @@ package javascript
 
 const JAVASCRIPT_TEST_SOURCE = `
 const expect = require("expect.js");
-const { Client, createAccount, NetworkType } = require("orbs-client-sdk");
+const { createAccount } = require("orbs-client-sdk");
 const { {{.AppName}} } = require("../src/{{.AppNameLowercase}}");
 const { deploy, getClient } = require("../src/deploy");
 
