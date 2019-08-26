@@ -8,13 +8,13 @@ const PACKAGE_JSON_SOURCE = `{
     "gamma:start": "gamma-cli start-local",
     "gamma:stop": "gamma-cli stop-local",
     "{{.AppNameLowercase}}:local": "node ./src/deploy.js",
-    "test": "mocha test"
+    "test": "mocha test --timeout 20000 --exit"
   },
   "devDependencies": {
     "expect.js": "^0.3.1",
     "mocha": "^6.1.4"
   },
   "dependencies": {
-    "orbs-client-sdk": "^1.0.0",
+    "orbs-client-sdk": "^1.0.0"
   }
 }`

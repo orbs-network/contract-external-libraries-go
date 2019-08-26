@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	"github.com/orbs-network/contract-external-libraries-go/builder/templates/project/javascript"
 	"io/ioutil"
 	"os"
@@ -18,13 +17,27 @@ func main() {
 
 	flag.Parse()
 
-	println(*projectPath, *name)
-
-	argsMap := getTemplateArgumentsMap(*name)
+	nameLowercase := strings.ToLower(*name)
+	argsMap := getTemplateArgumentsMap(*name, nameLowercase)
 
 	if err := writeFile(path.Join(*projectPath, "src", "contract"), "contract.go",
 		renderTemplate(javascript.CONTRACT_SOURCE, argsMap)); err != nil {
 			panic(err)
+	}
+
+	if err := writeFile(path.Join(*projectPath, "src"), "deploy.js",
+		renderTemplate(javascript.JAVASCRIPT_DEPLOYMENT_SOURCE, argsMap)); err != nil {
+		panic(err)
+	}
+
+	if err := writeFile(path.Join(*projectPath, "test"), nameLowercase + "_test.js",
+		renderTemplate(javascript.JAVASCRIPT_TEST_SOURCE, argsMap)); err != nil {
+		panic(err)
+	}
+
+	if err := writeFile(path.Join(*projectPath, "src"), nameLowercase + ".js",
+		renderTemplate(javascript.JAVASCRIPT_INTERFACE_SOURCE, argsMap)); err != nil {
+		panic(err)
 	}
 
 	if err := writeFile(path.Join(*projectPath), "package.json",
@@ -34,10 +47,10 @@ func main() {
 
 }
 
-func getTemplateArgumentsMap(name string) map[string]interface{} {
+func getTemplateArgumentsMap(name string, nameLowercase string) map[string]interface{} {
 	return map[string]interface{}{
 		"AppName": name,
-		"AppNameLowercase": strings.ToLower(name),
+		"AppNameLowercase": nameLowercase,
 	}
 }
 
@@ -53,7 +66,6 @@ func renderTemplate(source string, argsMap map[string]interface{}) string {
 }
 
 func writeFile(dir string, filename, contents string) error {
-	fmt.Println("mkdir", dir)
 	os.MkdirAll(dir, 0744)
 	return ioutil.WriteFile(path.Join(dir, filename), []byte(contents), 0644)
 }

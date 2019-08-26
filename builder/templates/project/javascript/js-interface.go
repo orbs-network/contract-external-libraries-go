@@ -1,8 +1,12 @@
 package javascript
 
-const JS_INTERFACE_SOURCE = `{
-const { argString, argBytes, argInt64, argInt32, 
-	createTransaction, sendTransaction, sendQuery } = require("orbs-network-sdk");
+const JAVASCRIPT_INTERFACE_SOURCE = `
+const { argString, argBytes, argUint64, argUint32 } = require("orbs-client-sdk");
+
+function getErrorFromReceipt(receipt) {
+    const value = receipt.requestStatus === "BAD_REQUEST" ? receipt.executionResult : receipt.outputArguments[0].value;
+    return new Error(value);
+}
 
 class {{.AppName}} {
 	constructor(orbsClient, contractName, publicKey, privateKey) {
@@ -23,7 +27,7 @@ class {{.AppName}} {
 
 		const receipt = await this.client.sendTransaction(tx);
 		if (receipt.executionResult !== 'SUCCESS') {
-			throw new Error(receipt.outputArguments[0].value);
+			throw getErrorFromReceipt(receipt);
 		}
 
 		return receipt.outputArguments[0].value;
@@ -39,12 +43,14 @@ class {{.AppName}} {
 
 		const receipt = await this.client.sendQuery(query);
 		if (receipt.executionResult !== 'SUCCESS') {
-			throw new Error(receipt.outputArguments[0].value);
+			throw getErrorFromReceipt(receipt);
 		}
 
 		return receipt.outputArguments[0].value;
 	}
 }
 
-module.exports = App;
+module.exports = {
+	{{.AppName}}
+};
 `
