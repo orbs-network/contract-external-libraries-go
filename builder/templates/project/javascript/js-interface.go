@@ -4,7 +4,7 @@ const JAVASCRIPT_INTERFACE_SOURCE = `
 const { argString, argBytes, argUint64, argUint32 } = require("orbs-client-sdk");
 
 function getErrorFromReceipt(receipt) {
-    const value = receipt.requestStatus === "BAD_REQUEST" ? receipt.executionResult : receipt.outputArguments[0].value;
+    const value = receipt.outputArguments.length == 0 ? receipt.executionResult : receipt.outputArguments[0].value;
     return new Error(value);
 }
 
