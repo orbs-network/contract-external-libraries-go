@@ -9,21 +9,31 @@ type List interface {
 	Append(item interface{}) (length uint64)
 	Get(index uint64) interface{}
 	Length() uint64
+	Iterator() Iterator
 }
 
-func NewAppendOnlyList(name string) List {
+type Serializer func(key []byte, item interface{}) error
+type Deserializer func(key []byte) (interface{}, error)
+
+func NewAppendOnlyList(name string, serializer Serializer, deserializer Deserializer) List {
 	return &list{
 		name,
+		serializer,
+		deserializer,
 	}
 }
 
 type list struct {
 	name string
+	serializer Serializer
+	deserializer Deserializer
 }
 
 func (l *list) Append(item interface{}) (length uint64) {
 	index := l.Length()
-	state.WriteString(l.itemKeyName(index), item.(string))
+	if err := l.serializer(l.itemKeyName(index), item); err != nil {
+		panic("could not serialize: " + err.Error())
+	}
 
 	length = index + 1
 	state.WriteUint64(l.lengthKeyName(), length)
@@ -32,11 +42,20 @@ func (l *list) Append(item interface{}) (length uint64) {
 }
 
 func (l *list) Get(index uint64) interface{} {
-	return state.ReadBytes(l.itemKeyName(index))
+	key := l.itemKeyName(index)
+	if item, err := l.deserializer(key); err != nil {
+		panic("could not deserialize key " + string(key) +": " + err.Error())
+	} else {
+		return item
+	}
 }
 
 func (l *list) Length() uint64 {
 	return state.ReadUint64(l.lengthKeyName())
+}
+
+func (l *list) Iterator() Iterator {
+	return NewListIterator(l)
 }
 
 func (l *list) itemKeyName(index uint64) []byte {
