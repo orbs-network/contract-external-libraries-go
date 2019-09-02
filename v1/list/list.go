@@ -12,9 +12,6 @@ type List interface {
 	Iterator() Iterator
 }
 
-type Serializer func(key []byte, item interface{}) error
-type Deserializer func(key []byte) (interface{}, error)
-
 func NewAppendOnlyList(name string, serializer Serializer, deserializer Deserializer) List {
 	return &list{
 		name,
@@ -31,9 +28,7 @@ type list struct {
 
 func (l *list) Append(item interface{}) (length uint64) {
 	index := l.Length()
-	if err := l.serializer(l.itemKeyName(index), item); err != nil {
-		panic("could not serialize: " + err.Error())
-	}
+	l.serializer(l.itemKeyName(index), item)
 
 	length = index + 1
 	state.WriteUint64(l.lengthKeyName(), length)
@@ -43,11 +38,7 @@ func (l *list) Append(item interface{}) (length uint64) {
 
 func (l *list) Get(index uint64) interface{} {
 	key := l.itemKeyName(index)
-	if item, err := l.deserializer(key); err != nil {
-		panic("could not deserialize key " + string(key) +": " + err.Error())
-	} else {
-		return item
-	}
+	return l.deserializer(key)
 }
 
 func (l *list) Length() uint64 {
