@@ -6,14 +6,14 @@ This is a set of high level libraries built on top of [Orbs Network Smart Contra
 
 ### Keys
 
-Imports from `github.com/contract-external-libraries-go/v1/keys`
+Imports from `github.com/orbs-network/contract-external-libraries-go/v1/keys`
 
 * `Key(string, ...string)` - takes a list of strings and concatenates them into a byte array that can be used as a key for state storage.
 * `Rename(oldKey, newKey)` - renames a single key in state storage.
 
 ### Structs
 
-Imports from `github.com/contract-external-libraries-go/v1/structs`
+Imports from `github.com/orbs-network/contract-external-libraries-go/v1/structs`
 
 **Writing and reading nested structs is not supported.**
 
@@ -26,7 +26,7 @@ Examples can be found in `examples/structs/contract.go`
 
 ### List
 
-Imports from `github.com/contract-external-libraries-go/v1/list`
+Imports from `github.com/orbs-network/contract-external-libraries-go/v1/list`
 
 `NewAppendOnlyList(name, serializer, deserializer)` - creates a new append-only list.
 
