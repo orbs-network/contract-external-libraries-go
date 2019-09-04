@@ -23,3 +23,28 @@ Examples can be found in `examples/structs/contract.go`
 * `ReadStruct(key, &Value{})` - reads keys from state storage one by one to populate the struct that was passed as a pointer.
 * `ClearStruct(key, Value{})` - removes the values of the struct from state storage.
 * `RenameStruct(oldKey, newKey, Value{})` - renames state storage keys that belong to the struct.
+
+### List
+
+Imports from `github.com/contract-external-libraries-go/v1/list`
+
+`NewAppendOnlyList(name, serializer, deserializer)` - creates a new append-only list.
+
+List methods:
+
+* `Append(item interface{}) (length uint64)` - appends new item
+* `Get(index uint64) interface{}` - returns the item
+* `Length() uint64` - returns list length
+* `Iterator() Iterator` - returns an iterator for the list
+
+`Serializer` is defined as a `func(key []byte, item interface{})`
+
+`Deserializer` is defined as `func(key []byte) interface{}`
+
+List of default Serializers/Deserializers:
+
+* `StringSerializer`, `StringDeserializer`
+* `Uint64Serializer`, `Uint64Deserializer`
+* `Uint32Serializer`, `Uint32Deserializer`
+* `BytesSerializer`, `BytesDeserializer`
+* `StructSerializer`, `StructDeserializer`
